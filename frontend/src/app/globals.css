@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  /* FocusForge Palette */
+  --forge-bg-dark: #1a0b06;
+  --forge-bg-lighter: #2d150d;
+  --forge-accent-gold: #f9a84d;
+  --forge-mastered-glow: #ffd700;
+  --forge-text-cream: #f9e8d2;
+  --forge-border: #43261a;
+  --forge-panel-bg: rgba(45, 21, 13, 0.7);
+  
+  --background: var(--forge-bg-dark);
+  --foreground: var(--forge-text-cream);
+}
+
+@theme {
+    --color-forge-bg: var(--forge-bg-dark);
+    --color-forge-panel: var(--forge-bg-lighter);
+    --color-forge-accent: var(--forge-accent-gold);
+    --color-forge-mastery: var(--forge-mastered-glow);
+    --color-forge-border: var(--forge-border);
+}
+
+body {
+  background-color: var(--forge-bg-dark);
+  color: var(--forge-text-cream);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.forge-glass {
+  background: var(--forge-panel-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--forge-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+}
+
+.forge-card {
+  background: linear-gradient(145deg, #2d150d 0%, #1a0b06 100%);
+  border: 1px solid var(--forge-border);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+}
+
+.glow-gold {
+  filter: drop-shadow(0 0 8px rgba(249, 168, 77, 0.5));
+}
+
+.glow-mastery {
+  filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.6));
+}
+
+/* Custom Scrollbar for Forge Look */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--forge-bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--forge-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--forge-accent-gold);
+}

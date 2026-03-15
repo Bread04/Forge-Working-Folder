@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "FocusFlow AI Enforcer",
+  "version": "1.0.0",
+  "description": "Chrome Extension for FocusFlow AI to enforce study sessions.",
+  "permissions": ["tabs", "storage", "alarms", "idle"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background/service_worker.js"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/block.js"],
+      "css": ["content/block.css"],
+      "run_at": "document_start"
+    }
+  ],
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  }
+}

@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+python-multipart
+google-generativeai
+supabase
+pydantic-settings
+websockets
+python-dotenv
+pytest
+httpx
+pypdf
