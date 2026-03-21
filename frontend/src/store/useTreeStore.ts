@@ -37,12 +37,19 @@ interface TreeState {
   setTreeData: (title: string, nodes: TreeNode[]) => void;
   setActiveNode: (id: string | null) => void;
   updateMastery: (nodeId: string, score: number) => void;
+  adjustMastery: (nodeId: string, delta: number) => void;
+  isBeginnerMind: boolean;
+  toggleBeginnerMind: () => void;
+  isSparringMode: boolean;
+  toggleSparringMode: () => void;
 }
 
 export const useTreeStore = create<TreeState>((set) => ({
   documentTitle: '',
   nodes: [],
   activeNodeId: null,
+  isBeginnerMind: false,
+  isSparringMode: false,
   setTreeData: (title, nodes) => set({ documentTitle: title, nodes }),
   setActiveNode: (id) => set({ activeNodeId: id }),
   updateMastery: (nodeId, score) => set((state) => ({
@@ -50,4 +57,13 @@ export const useTreeStore = create<TreeState>((set) => ({
       n.node_id === nodeId ? { ...n, mastery_score: Math.min(100, Math.max(0, score)) } : n
     )
   })),
+  adjustMastery: (nodeId, delta) => set((state) => ({
+    nodes: state.nodes.map((n) => 
+      n.node_id === nodeId 
+        ? { ...n, mastery_score: Math.min(100, Math.max(0, (n.mastery_score || 0) + delta)) } 
+        : n
+    )
+  })),
+  toggleBeginnerMind: () => set((state) => ({ isBeginnerMind: !state.isBeginnerMind })),
+  toggleSparringMode: () => set((state) => ({ isSparringMode: !state.isSparringMode })),
 }));

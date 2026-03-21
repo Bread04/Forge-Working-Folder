@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Target, Bug, User, Swords, ShieldQuestion, Check, X, Timer } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTreeStore } from '@/store/useTreeStore';
 
 type QuizType = 'truths' | 'debug' | 'roleplay' | 'boss';
 
 interface ReviseContentProps {
   nodeName: string;
+  nodeId?: string;
   context: {
     parents: string[];
     children: string[];
@@ -15,8 +17,13 @@ interface ReviseContentProps {
   };
 }
 
-export default function ReviseContent({ nodeName, context }: ReviseContentProps) {
+export default function ReviseContent({ nodeName, nodeId, context }: ReviseContentProps) {
   const [activeQuiz, setActiveQuiz] = useState<QuizType | null>(null);
+  const adjustMastery = useTreeStore((state) => state.adjustMastery);
+
+  useEffect(() => {
+    if (nodeId) adjustMastery(nodeId, 2);
+  }, [nodeId, adjustMastery]);
 
   return (
     <div className="forge-card min-h-[500px] flex flex-col">

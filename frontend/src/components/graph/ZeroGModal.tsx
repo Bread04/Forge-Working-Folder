@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { X, Brain, Zap, ArrowRight, ChevronRight, Check, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTreeStore } from '@/store/useTreeStore';
 
 interface SwipeQuiz {
   statement: string;
@@ -13,6 +14,7 @@ interface ZeroGModalProps {
   isOpen: boolean;
   onClose: () => void;
   nodeName: string;
+  nodeId?: string; // Added nodeId
   content: {
     analogy_expansion: string;
     tether_action: string;
@@ -20,15 +22,21 @@ interface ZeroGModalProps {
   };
 }
 
-export default function ZeroGModal({ isOpen, onClose, nodeName, content }: ZeroGModalProps) {
+export default function ZeroGModal({ isOpen, onClose, nodeName, nodeId, content }: ZeroGModalProps) {
   const [view, setView] = useState<'overview' | 'quiz'>('overview');
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [quizScore, setQuizScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const adjustMastery = useTreeStore((state) => state.adjustMastery);
+  const isBeginnerMind = useTreeStore((state) => state.isBeginnerMind);
 
   const handleQuizAnswer = (answer: boolean) => {
-    if (answer === content.swipe_quiz[currentQuizIndex].is_true) {
+    const isCorrect = answer === content.swipe_quiz[currentQuizIndex].is_true;
+    if (isCorrect) {
       setQuizScore(prev => prev + 1);
+      if (nodeId) adjustMastery(nodeId, 5);
+    } else {
+      if (nodeId) adjustMastery(nodeId, -10);
     }
 
     if (currentQuizIndex < 3) {
@@ -72,21 +80,21 @@ export default function ZeroGModal({ isOpen, onClose, nodeName, content }: ZeroG
               {view === 'overview' ? (
                 <div className="space-y-8">
                   {/* Analogy */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-[#f9a84d] text-xs font-black uppercase italic">
-                      <Zap size={14} fill="currentColor" /> Analogy Expansion
+                  <div className={`p-6 rounded-2xl transition-all duration-500 ${isBeginnerMind ? 'bg-[#f9a84d]/10 border-2 border-[#f9a84d] shadow-[0_0_30px_rgba(249,168,77,0.2)]' : 'bg-white/5 border border-white/10'}`}>
+                    <div className="flex items-center gap-2 text-[#f9a84d] text-xs font-black uppercase italic mb-3">
+                      <Zap size={14} fill="currentColor" /> Neural Analogy
                     </div>
-                    <p className="text-[#f9e8d2] text-lg font-light leading-relaxed italic">
+                    <p className="text-[#f9e8d2] text-xl font-light italic leading-relaxed">
                       "{content.analogy_expansion}"
                     </p>
                   </div>
 
                   {/* Tether Action */}
-                  <div className="p-5 bg-white/5 border border-white/5 rounded-2xl">
-                    <div className="flex items-center gap-2 text-white/40 text-[10px] font-bold uppercase mb-2">
+                  <div className="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                    <div className="flex items-center gap-2 text-white/40 text-[10px] font-bold uppercase mb-3">
                        Tether Action (Practical Use)
                     </div>
-                    <p className="text-white/80 text-sm font-medium">
+                    <p className="text-white/80 text-sm font-medium leading-relaxed">
                       {content.tether_action}
                     </p>
                   </div>

@@ -1,17 +1,64 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Lightbulb, Rocket, HelpCircle, User, BookOpen, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTreeStore } from '@/store/useTreeStore';
 
 type ExpansionType = 'eli5' | 'real_world' | 'socratic';
 
 interface UnderstandContentProps {
   nodeName: string;
+  nodeId?: string;
 }
 
-export default function UnderstandContent({ nodeName }: UnderstandContentProps) {
+export default function UnderstandContent({ nodeName, nodeId }: UnderstandContentProps) {
   const [activeFramework, setActiveFramework] = useState<ExpansionType | null>(null);
+  const adjustMastery = useTreeStore((state) => state.adjustMastery);
+  const isBeginnerMind = useTreeStore((state) => state.isBeginnerMind);
+  const node = useTreeStore((state) => state.nodes.find(n => n.node_id === nodeId));
+
+  useEffect(() => {
+    if (nodeId) adjustMastery(nodeId, 2);
+  }, [nodeId, adjustMastery]);
+
+  if (isBeginnerMind && node) {
+    return (
+      <div className="forge-card min-h-[500px] flex flex-col border-[#f9a84d]/30 bg-[#f9a84d]/5">
+        <div className="mb-6 flex items-center gap-2">
+          <div className="p-2 bg-[#f9a84d] text-[#1a0b06] rounded-lg">
+            <Lightbulb size={16} />
+          </div>
+          <div>
+            <h2 className="text-xl font-black uppercase tracking-tighter italic">The Intelligent Fool</h2>
+            <p className="text-[#f9a84d] text-[10px] font-bold uppercase tracking-widest opacity-60">Simplified Intuition for {nodeName}</p>
+          </div>
+        </div>
+
+        <div className="space-y-8 flex-1">
+          <div className="space-y-3">
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-[#f9a84d]">Neural Analogy</h4>
+            <p className="text-[#f9e8d2] text-xl font-light italic leading-relaxed">
+              "{node.zero_g_content.analogy_expansion}"
+            </p>
+          </div>
+
+          <div className="p-6 bg-white/5 rounded-2xl border border-white/5">
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-3">Tether (Practical Use)</h4>
+            <p className="text-white/80 text-sm leading-relaxed">
+              {node.zero_g_content.tether_action}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-8 p-4 bg-[#f9a84d]/10 rounded-xl">
+          <p className="text-[10px] text-[#f9a84d] font-bold italic">
+            "You are seeing the intuitive core. Return to standard mode when you're ready for the technical details."
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="forge-card min-h-[500px] flex flex-col">

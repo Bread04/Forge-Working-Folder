@@ -3,13 +3,16 @@
 import { useState } from 'react';
 import { Mic, Send, Lightbulb, PlayCircle, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTreeStore } from '@/store/useTreeStore';
 
-export default function FeynmanExplainer({ nodeName }: { nodeName: string }) {
+export default function FeynmanExplainer({ nodeName, nodeId }: { nodeName: string, nodeId?: string }) {
   const [explanation, setExplanation] = useState('');
   const [feedback, setFeedback] = useState<string | null>(null);
+  const adjustMastery = useTreeStore((state) => state.adjustMastery);
 
   const getFeedback = () => {
     setFeedback("Solid explanation! You simplified the jargon well. However, you might want to clarify the 'moment of inertia' part—try using the 'spinning ice skater' analogy to make it even simpler for a layman.");
+    if (nodeId) adjustMastery(nodeId, 8);
   };
 
   return (

@@ -3,21 +3,28 @@
 import { useState } from 'react';
 import { Brain, CheckCircle2, AlertCircle, RefreshCcw } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTreeStore } from '@/store/useTreeStore';
 
-export default function BlurtingCanvas({ nodeName, sourceContent }: { nodeName: string, sourceContent: string }) {
+export default function BlurtingCanvas({ nodeName, nodeId, sourceContent }: { nodeName: string, nodeId?: string, sourceContent: string }) {
   const [blurtText, setBlurtText] = useState('');
   const [result, setResult] = useState<{ score: number, missed: string[] } | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const adjustMastery = useTreeStore((state) => state.adjustMastery);
 
   const analyzeBlurt = async () => {
     setIsAnalyzing(true);
     // Simulation of AI comparison logic
     setTimeout(() => {
+      const score = 75;
       setResult({
-        score: 75,
+        score,
         missed: ['Entropy', 'Second Law of Thermodynamics', 'Energy Dissipation']
       });
       setIsAnalyzing(false);
+      if (nodeId) {
+        const delta = Math.floor((score - 50) / 5);
+        adjustMastery(nodeId, delta);
+      }
     }, 2000);
   };
 
