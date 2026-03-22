@@ -3,9 +3,93 @@
 import Sidebar from '@/components/layout/Sidebar';
 import PomodoroTimer from '@/components/focus/PomodoroTimer';
 import ChatSidebar from '@/components/chat/ChatSidebar';
-import { Zap, Target, TrendingUp, Trophy } from 'lucide-react';
+import { Zap, Target, TrendingUp, Trophy, Upload, Loader2, Database } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { useTreeStore } from '@/store/useTreeStore';
+import { useRouter } from 'next/navigation';
 
 export default function Dashboard() {
+  const [isUploading, setIsUploading] = useState(false);
+  const [persistentTrees, setPersistentTrees] = useState<{id: string; title: string; created_at: string}[]>([]);
+  const [isLoadingTrees, setIsLoadingTrees] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const addTree = useTreeStore(state => state.addTree);
+  const router = useRouter();
+
+  useEffect(() => {
+    fetch('http://localhost:8000/api/trees')
+      .then(res => res.json())
+      .then(data => {
+        setPersistentTrees(data.trees || []);
+        setIsLoadingTrees(false);
+      })
+      .catch(err => {
+        console.error("Failed fetching trees:", err);
+        setIsLoadingTrees(false);
+      });
+  }, []);
+
+  const handleLoadTree = async (treeId: string) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/trees/${treeId}`);
+      if (!response.ok) throw new Error("Failed to load tree");
+      const data = await response.json();
+      addTree(data); 
+      router.push('/tree');
+    } catch (error) {
+      console.error("Failed loading tree:", error);
+      alert("Error loading the mapped tree from backend.");
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      alert('Please upload a PDF file.');
+      return;
+    }
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('http://localhost:8000/api/extract-graph', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to process PDF');
+      }
+
+      const data = await response.json();
+      
+      const pdfUrl = URL.createObjectURL(file);
+      const newTreeData = {
+        id: data.tree_id || Date.now().toString(),
+        title: data.documentTitle || file.name.replace('.pdf', ''),
+        nodes: data.nodes || [],
+        edges: data.edges || [],
+        pdfUrl
+      };
+      
+      addTree(newTreeData);
+      
+      router.push('/tree');
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Error processing PDF. Please check your API keys and try again.');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   return (
     <div className="flex h-screen bg-[#1a0b06] text-[#f9e8d2]">
       <Sidebar />
@@ -59,15 +143,57 @@ export default function Dashboard() {
                    <p className="text-[#f9a84d] font-bold">12 Active Nodes</p>
                  </div>
                </div>
-               <div className="forge-card flex items-center gap-6">
-                 <div className="w-16 h-16 bg-[#ffd700]/10 rounded-2xl flex items-center justify-center text-[#ffd700]">
-                   <Trophy size={32} />
+               
+               {/* PDF Upload Card */}
+               <div className="forge-card flex flex-col justify-center items-center gap-4 border-dashed border-2 hover:border-[#f9a84d]/50 transition-colors cursor-pointer relative"
+                    onClick={() => !isUploading && fileInputRef.current?.click()}
+               >
+                 <input 
+                   type="file" 
+                   accept="application/pdf"
+                   className="hidden" 
+                   ref={fileInputRef}
+                   onChange={handleFileUpload}
+                 />
+                 <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400">
+                   {isUploading ? <Loader2 size={32} className="animate-spin" /> : <Upload size={32} />}
                  </div>
-                 <div>
-                   <h3 className="text-white font-black uppercase tracking-tighter leading-none mb-1 text-xl">Weekly Rank</h3>
-                   <p className="text-[#ffd700] font-bold">#2 This Week</p>
+                 <div className="text-center">
+                   <h3 className="text-white font-black uppercase tracking-tighter leading-none mb-1 text-xl">
+                     {isUploading ? 'Forging Tree...' : 'Upload Notes'}
+                   </h3>
+                   <p className="text-indigo-400 font-bold text-xs">PDF to Skill Tree</p>
                  </div>
                </div>
+            </div>
+
+            {/* Active Core Trees */}
+            <div className="forge-card border-indigo-500/20 bg-indigo-500/5">
+              <div className="flex items-center gap-3 mb-6">
+                <Database className="text-indigo-400" />
+                <h2 className="text-xl font-black uppercase tracking-tighter italic">Persistent Memory Trees</h2>
+              </div>
+              {isLoadingTrees ? (
+                <div className="flex justify-center p-8"><Loader2 className="animate-spin text-indigo-400" /></div>
+              ) : persistentTrees.length === 0 ? (
+                <p className="text-white/40 text-sm font-bold uppercase tracking-widest text-center py-8">No Neo-Graphs in memory. Upload notes to begin.</p>
+              ) : (
+                <div className="grid grid-cols-2 gap-4">
+                  {persistentTrees.map(tree => (
+                    <button 
+                      key={tree.id}
+                      onClick={() => handleLoadTree(tree.id)}
+                      className="text-left p-5 border border-indigo-500/20 hover:border-indigo-400/50 bg-[#1a0b06] rounded-2xl transition-all group hover:-translate-y-1 relative overflow-hidden"
+                    >
+                      <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-indigo-500/20 to-transparent rounded-bl-3xl" />
+                      <h4 className="text-[#f9e8d2] font-black uppercase leading-tight mb-2 group-hover:text-indigo-400 transition-colors relative z-10 truncate">{tree.title}</h4>
+                      <p className="text-white/30 text-[10px] uppercase font-bold tracking-widest relative z-10">
+                        Generated: {new Date(tree.created_at).toLocaleDateString()}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

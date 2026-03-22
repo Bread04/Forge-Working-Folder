@@ -6,7 +6,7 @@ import { Zap } from 'lucide-react';
 
 export default memo(({ data, selected }: NodeProps) => {
   const mastery = data.mastery_score || 0;
-  const isMastered = mastery >= 90;
+  const isMastered = mastery === 100;
 
   return (
     <div className={`relative flex flex-col items-center group transition-all duration-500 ${selected ? 'scale-110' : ''}`}>

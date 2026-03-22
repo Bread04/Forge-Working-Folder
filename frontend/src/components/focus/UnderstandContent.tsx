@@ -16,7 +16,11 @@ export default function UnderstandContent({ nodeName, nodeId }: UnderstandConten
   const [activeFramework, setActiveFramework] = useState<ExpansionType | null>(null);
   const adjustMastery = useTreeStore((state) => state.adjustMastery);
   const isBeginnerMind = useTreeStore((state) => state.isBeginnerMind);
-  const node = useTreeStore((state) => state.nodes.find(n => n.node_id === nodeId));
+  const node = useTreeStore((state) => {
+    if (!state.activeTreeId) return undefined;
+    const treeData = state.trees[state.activeTreeId];
+    return treeData?.nodes?.find(n => n.id === nodeId);
+  });
 
   useEffect(() => {
     if (nodeId) adjustMastery(nodeId, 2);
@@ -37,16 +41,12 @@ export default function UnderstandContent({ nodeName, nodeId }: UnderstandConten
 
         <div className="space-y-8 flex-1">
           <div className="space-y-3">
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-[#f9a84d]">Neural Analogy</h4>
-            <p className="text-[#f9e8d2] text-xl font-light italic leading-relaxed">
-              "{node.zero_g_content.analogy_expansion}"
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-[#f9a84d]">Neural Intuition</h4>
+            <p className="text-[#f9e8d2] text-xl font-light italic leading-relaxed whitespace-pre-wrap">
+              "{node.zero_g_intuition}"
             </p>
-          </div>
-
-          <div className="p-6 bg-white/5 rounded-2xl border border-white/5">
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-3">Tether (Practical Use)</h4>
-            <p className="text-white/80 text-sm leading-relaxed">
-              {node.zero_g_content.tether_action}
+            <p className="text-white/50 text-sm italic mt-4">
+              Return to the **Revise** or **Sparring Mode** tabs for deeper contextual challenges and applications.
             </p>
           </div>
         </div>

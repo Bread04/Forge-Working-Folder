@@ -5,46 +5,17 @@ import { X, Brain, Zap, ArrowRight, ChevronRight, Check, AlertCircle } from 'luc
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTreeStore } from '@/store/useTreeStore';
 
-interface SwipeQuiz {
-  statement: string;
-  is_true: boolean;
-}
-
 interface ZeroGModalProps {
   isOpen: boolean;
   onClose: () => void;
   nodeName: string;
-  nodeId?: string; // Added nodeId
-  content: {
-    analogy_expansion: string;
-    tether_action: string;
-    swipe_quiz: SwipeQuiz[];
-  };
+  nodeId?: string;
+  content: string;
 }
 
 export default function ZeroGModal({ isOpen, onClose, nodeName, nodeId, content }: ZeroGModalProps) {
-  const [view, setView] = useState<'overview' | 'quiz'>('overview');
-  const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
-  const [quizScore, setQuizScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
   const adjustMastery = useTreeStore((state) => state.adjustMastery);
   const isBeginnerMind = useTreeStore((state) => state.isBeginnerMind);
-
-  const handleQuizAnswer = (answer: boolean) => {
-    const isCorrect = answer === content.swipe_quiz[currentQuizIndex].is_true;
-    if (isCorrect) {
-      setQuizScore(prev => prev + 1);
-      if (nodeId) adjustMastery(nodeId, 5);
-    } else {
-      if (nodeId) adjustMastery(nodeId, -10);
-    }
-
-    if (currentQuizIndex < 3) {
-      setCurrentQuizIndex(prev => prev + 1);
-    } else {
-      setShowResult(true);
-    }
-  };
 
   return (
     <AnimatePresence>
@@ -77,104 +48,29 @@ export default function ZeroGModal({ isOpen, onClose, nodeName, nodeId, content 
                 </div>
               </div>
 
-              {view === 'overview' ? (
-                <div className="space-y-8">
-                  {/* Analogy */}
-                  <div className={`p-6 rounded-2xl transition-all duration-500 ${isBeginnerMind ? 'bg-[#f9a84d]/10 border-2 border-[#f9a84d] shadow-[0_0_30px_rgba(249,168,77,0.2)]' : 'bg-white/5 border border-white/10'}`}>
-                    <div className="flex items-center gap-2 text-[#f9a84d] text-xs font-black uppercase italic mb-3">
-                      <Zap size={14} fill="currentColor" /> Neural Analogy
-                    </div>
-                    <p className="text-[#f9e8d2] text-xl font-light italic leading-relaxed">
-                      "{content.analogy_expansion}"
-                    </p>
+              <div className="space-y-8">
+                {/* Analogy */}
+                <div className={`p-6 rounded-2xl transition-all duration-500 ${isBeginnerMind ? 'bg-[#f9a84d]/10 border-2 border-[#f9a84d] shadow-[0_0_30px_rgba(249,168,77,0.2)]' : 'bg-white/5 border border-white/10'}`}>
+                  <div className="flex items-center gap-2 text-[#f9a84d] text-xs font-black uppercase italic mb-3">
+                    <Zap size={14} fill="currentColor" /> Neural Analogy
                   </div>
+                  <p className="text-[#f9e8d2] text-xl font-light italic leading-relaxed">
+                    "{content}"
+                  </p>
+                </div>
 
-                  {/* Tether Action */}
-                  <div className="p-6 bg-white/5 border border-white/10 rounded-2xl">
-                    <div className="flex items-center gap-2 text-white/40 text-[10px] font-bold uppercase mb-3">
-                       Tether Action (Practical Use)
-                    </div>
-                    <p className="text-white/80 text-sm font-medium leading-relaxed">
-                      {content.tether_action}
-                    </p>
-                  </div>
-
+                <div className="p-6 bg-white/5 border border-white/10 rounded-2xl flex flex-col gap-4">
+                  <p className="text-white/60 text-sm italic">
+                    For deeper challenges, quizzes, and practice, click the node and open the <strong>Revise</strong> or <strong>Sparring Mode</strong> panel.
+                  </p>
                   <button 
-                    onClick={() => setView('quiz')}
-                    className="w-full py-5 bg-[#f9a84d] hover:bg-[#ffbd71] text-[#1a0b06] rounded-2xl font-black uppercase tracking-tighter flex items-center justify-center gap-2 transition-all group"
+                    onClick={onClose}
+                    className="w-full py-5 bg-[#f9a84d] hover:bg-[#ffbd71] text-[#1a0b06] rounded-2xl font-black uppercase tracking-tighter transition-all"
                   >
-                    Initiate Swipe Quiz <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+                    Acknowledge
                   </button>
                 </div>
-              ) : (
-                <div className="min-h-[300px] flex flex-col">
-                  {!showResult ? (
-                    <>
-                      <div className="mb-8">
-                        <div className="flex justify-between text-[10px] font-bold text-white/30 uppercase mb-2">
-                          <span>Pulse Tracking</span>
-                          <span>{currentQuizIndex + 1} / 4</span>
-                        </div>
-                        <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                          <div className="h-full bg-[#f9a84d]" style={{ width: `${((currentQuizIndex + 1) / 4) * 100}%` }} />
-                        </div>
-                      </div>
-
-                      <div className="flex-1 flex items-center justify-center py-8">
-                        <p className="text-2xl font-bold text-white text-center leading-tight">
-                          {content.swipe_quiz[currentQuizIndex].statement}
-                        </p>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4 mt-8">
-                        <button 
-                          onClick={() => handleQuizAnswer(false)}
-                          className="py-6 bg-white/5 hover:bg-rose-500/10 border border-white/5 hover:border-rose-500/30 text-white rounded-2xl font-bold uppercase tracking-widest transition-all"
-                        >
-                          False
-                        </button>
-                        <button 
-                          onClick={() => handleQuizAnswer(true)}
-                          className="py-6 bg-white/5 hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/30 text-white rounded-2xl font-bold uppercase tracking-widest transition-all"
-                        >
-                          True
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="flex-1 flex flex-col items-center justify-center text-center py-8"
-                    >
-                      <div className="w-24 h-24 bg-[#ffd700] rounded-full flex items-center justify-center text-[#1a0b06] mb-6 shadow-[0_0_40px_rgba(255,215,0,0.3)]">
-                        <Check size={48} strokeWidth={4} />
-                      </div>
-                      <h3 className="text-3xl font-black text-white uppercase tracking-tighter italic mb-2">Mastery Synced</h3>
-                      <p className="text-white/40 mb-8">You achieved {quizScore}/4 on the neural pulse.</p>
-                      <div className="flex gap-4">
-                        <button 
-                          onClick={() => {
-                            setView('overview');
-                            setShowResult(false);
-                            setCurrentQuizIndex(0);
-                            setQuizScore(0);
-                          }}
-                          className="px-8 py-4 border border-[#43261a] text-white/60 rounded-xl font-bold uppercase text-[10px] hover:bg-white/5"
-                        >
-                          Retry Quiz
-                        </button>
-                        <button 
-                          onClick={onClose}
-                          className="px-8 py-4 bg-[#f9a84d] text-[#1a0b06] rounded-xl font-black uppercase text-[10px] hover:bg-[#ffbd71]"
-                        >
-                          Return to Tree
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
-              )}
+              </div>
             </div>
           </motion.div>
         </div>

@@ -9,3 +9,6 @@ python-dotenv
 pytest
 httpx
 pypdf
+openai
+unstructured[pdf]
+pdfminer.six

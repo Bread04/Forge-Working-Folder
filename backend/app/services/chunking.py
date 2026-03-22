@@ -1,5 +1,3 @@
-from pypdf import PdfReader
-
 def chunk_text(text: str, chunk_size: int = 1000, overlap: int = 200):
     chunks = []
     start = 0
@@ -9,9 +7,12 @@ def chunk_text(text: str, chunk_size: int = 1000, overlap: int = 200):
         start += (chunk_size - overlap)
     return chunks
 
-def parse_pdf(pdf_path: str):
-    reader = PdfReader(pdf_path)
-    text = ""
-    for page in reader.pages:
-        text += page.extract_text() + "\n"
-    return text
+def parse_pdf(pdf_path: str) -> list[str]:
+    """ Extracts text from a PDF and returns it as a list of text chunks. """
+    import fitz  # PyMuPDF
+    doc = fitz.open(pdf_path)
+    full_text = ""
+    for page in doc:
+        full_text += page.get_text()
+    doc.close()
+    return chunk_text(full_text)
